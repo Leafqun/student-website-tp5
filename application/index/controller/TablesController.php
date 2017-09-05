@@ -35,9 +35,10 @@ class TablesController
         foreach ($tablesIds as $tablesId){
             $file = Tables::where('tableId', $tablesId)
                 ->field('tableFile')->find();
-            if(empty($file->tableFile)) continue;
-            $fileurl = url::$fileURL . $file['tableFile'];
-            if(file_exists($fileurl)) unlink($fileurl);
+            if(!empty($file->tableFile)) {
+                $fileurl = url::$fileURL . $file['tableFile'];
+                if (file_exists($fileurl)) unlink($fileurl);
+            }
             Tables::destroy($tablesId);
         }
         return array('msg' => 'success');
@@ -45,9 +46,9 @@ class TablesController
 
     public function insertTables(Request $request){
         header('Access-Control-Allow-Origin:*');
-        $bool = '';
+        $bool = null;
         $file = $request -> file('file');
-        if($file -> isValid()){
+        if($file){
             $info = $file->move(url::$fileUrl ,'');
             if($info){
                 $filename = $info->getFilename();

@@ -45,52 +45,68 @@ class NoticeController
     //提交通知
     public function submitNotice(Request $request){
         header('Access-Control-Allow-Origin:*');
-        $input = $request->except(['cfile']);
+        $input = $request->except(["cfile"]);
+        $tip = null;
         $input['noticeTime'] = date('Y-m-d H:i:s',time());
-        if($request->has('cfile')) {
-            $file = $request->file('cfile');
+        $request->file('cfile');
+        $file = $request->file('cfile');
+        if($file) {
             $info = $file->move(url::$fileUrl, '');
             if ($info) {
                 $filename = $info->getFilename();
+                //删除旧文件
+                if(!empty($input['file'])){
+                    $fileurl = url::$fileURL . $input['file'];
+                    if(file_exists($fileurl)) unlink($fileurl);
+                }
                 $input['file'] = $filename;
+                $tip = '上传成功';
 
+            }else{
+                $tip = '本地存储失败';
             }
-        }
+        }else $tip =  '文件未上传或上传失败';
         //存入数据库
         if(empty($input['noticeId'])){
             //插入
             $notice = Notice::create($input);
+            $msg = null;
             if($notice) {
-                return json(array('msg' => '添加成功'));
+                $msg = '添加成功';
             }else{
-                return json(array('msg' => '添加失败'));
+                $msg = '添加失败';
             }
         }else{
             $g = Notice::where('noticeId', $input['noticeId']) -> update($input);
             if($g) {
-                return json(array('msg' => '更改成功'));
+                $msg = '更改成功';
             }else{
-                return json(array('msg' => '更改失败'));
+                $msg = '更改失败';
             }
         }
+        return array('msg' => $msg, 'tip' => $tip);
     }
     //删除通知
     public function deleteNotice(Request $request)
     {
         header('Access-Control-Allow-Origin:*');
-        if(is_array($request->noticeId)) {
+        if(is_array($request->param('noticeId'))) {
             $noticeId = $request->param('noticeId');
         }else{
             $noticeId = array($request->param('noticeId'));
         }
-        foreach ($noticeId as $id){
-            $filename = Notice::where('noticeId', $id)
-                ->field('file')->find();
-            if(empty($filename ->file)) continue;
-            $path = ROOT_PATH . 'public' . DS . 'uploads' . DS;
-            unlink($path . $filename->file);
-            Notice::destroy($id);
+        foreach ($noticeId as $nid){
+            if(!empty($nid)) {
+                $filename = Notice::where('noticeId', $nid)
+                    ->field('file')->find();
+                if (!empty($filename->file)) {
+                    $fileurl = url::$fileURL . $filename->file;
+                    if (file_exists($fileurl)) unlink($fileurl);
+                }
+                Notice::where('noticeId', $nid)->delete();
+            }
         }
+
         return array('msg' => '删除成功');
     }
 }

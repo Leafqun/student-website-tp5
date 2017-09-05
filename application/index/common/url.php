@@ -11,9 +11,9 @@ namespace app\index\common;
 
 class url
 {
-    static public $fileURL = 'uploads/';
-    static public $fileUrl = 'uploads';
-    //static public $fileURL = '/usr/local/apache/htdocs/static/manage/';
-    //static public $fileUrl = '/usr/local/apache/htdocs/static/manage/';
+    //static public $fileURL = 'uploads/';
+    //static public $fileUrl = 'uploads';
+    static public $fileURL = '/usr/local/apache/htdocs/static/manage/';
+    static public $fileUrl = '/usr/local/apache/htdocs/static/manage/';
 
 }

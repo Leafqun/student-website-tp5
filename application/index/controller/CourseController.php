@@ -42,7 +42,7 @@ class CourseController
 
     public function deleteCourse(Request $request){
         header('Access-Control-Allow-Origin:*');
-        $oldFile = CourseFile::where('courseId', $request -> courseId)
+        $oldFile = CourseFile::where('courseId', $request -> param('courseId'))
             ->field('cfileName')->select();
         foreach ($oldFile as $file){
             if(!empty($file)){
@@ -81,8 +81,8 @@ class CourseController
     public function insertCourseFile(Request $request){
         header('Access-Control-Allow-Origin:*');
         $courseFile = $request -> only(['courseId', 'ctype']);
-        if($request->has('file')) {
-            $file = $request->file('file');
+        $file = $request->file('file');
+        if($file) {
             $info = $file->move(url::$fileUrl, '');
             if ($info) {
                 $filename = $info->getFilename();
